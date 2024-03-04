@@ -1,0 +1,3 @@
+java:
+  package-name: com.sample
+  use-lombok: true
