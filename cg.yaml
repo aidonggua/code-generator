@@ -1,3 +1,5 @@
-java:
+name: sample
+language: java
+project:
   package-name: com.sample
   use-lombok: true
