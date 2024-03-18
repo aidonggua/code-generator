@@ -1,0 +1,17 @@
+project:
+  src-path: src/main/java
+  base-package: com.sample
+mysql:
+  username: root
+  password: root
+  host: 127.0.0.1
+  port: 3306
+  database: test
+tasks:
+  - name: generate-entity                               # task name
+    template: entity.tpl                                # template file from .cg/templates folder
+    type: table_to_entity                               # table to entity
+    sub-package: domain                                 # sub package
+    source: user                                        # table name
+    output: User.java                                   # output file name
+    enable: true                                        # enable or disable the task
