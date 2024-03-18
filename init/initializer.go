@@ -53,6 +53,6 @@ func (i *Initializer) Init() {
 	generator.FileWriter{}.CreateFolder(".cg/output")
 	generator.FileWriter{}.CreateFolder(".cg/templates")
 	generator.FileWriter{}.Write(configYaml, ".cg/config.yaml")
-	generator.FileWriter{}.Write(entityTpl, ".cg/templates/config.yaml")
+	generator.FileWriter{}.Write(entityTpl, ".cg/templates/entity.tpl")
 	fmt.Println("Initialized successfully.")
 }

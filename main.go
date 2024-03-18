@@ -12,7 +12,7 @@ func main() {
 	gen := &generator.DefaultGenerator{}
 
 	args := os.Args
-	if len(args) < 2 {
+	if len(args) < 2 || len(args) > 2 || (args[1] != "init" && args[1] != "run") {
 		fmt.Println("Usage: cg <init> | <run>")
 		return
 	}
@@ -23,18 +23,21 @@ func main() {
 		return
 	}
 
-	viper.SetConfigName(fmt.Sprintf(".cg/config.yaml")) // name of config file (without extension)
-	viper.SetConfigType("yaml")                         // REQUIRED if the config file does not have the extension in the name
-	viper.AddConfigPath(".")                            // optionally look for config in the working directory
-	err := viper.ReadInConfig()                         // Find and read the config file
-	if err != nil {                                     // Handle errors reading the config file
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
-	}
+	if args[1] == "run" {
+		viper.SetConfigName(fmt.Sprintf(".cg/config.yaml")) // name of config file (without extension)
+		viper.SetConfigType("yaml")                         // REQUIRED if the config file does not have the extension in the name
+		viper.AddConfigPath(".")                            // optionally look for config in the working directory
+		err := viper.ReadInConfig()                         // Find and read the config file
+		if err != nil {                                     // Handle errors reading the config file
+			panic(fmt.Errorf("Fatal error config file: %s \n", err))
+		}
 
-	err = gen.LoadConfig()
-	if err != nil {
-		panic(err)
-	}
+		err = gen.LoadConfig()
+		if err != nil {
+			panic(err)
+		}
 
-	gen.Generate()
+		gen.Generate()
+		return
+	}
 }
