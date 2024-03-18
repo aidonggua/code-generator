@@ -2,12 +2,26 @@ package main
 
 import (
 	"code-generator/generator"
+	initialize "code-generator/init"
 	"fmt"
 	"github.com/spf13/viper"
+	"os"
 )
 
 func main() {
 	gen := &generator.DefaultGenerator{}
+
+	args := os.Args
+	if len(args) < 2 {
+		fmt.Println("Usage: cg <init> | <run>")
+		return
+	}
+
+	if args[1] == "init" {
+		initializer := &initialize.Initializer{}
+		initializer.Init()
+		return
+	}
 
 	viper.SetConfigName(fmt.Sprintf(".cg/config.yaml")) // name of config file (without extension)
 	viper.SetConfigType("yaml")                         // REQUIRED if the config file does not have the extension in the name

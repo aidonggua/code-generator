@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/flosch/pongo2/v6"
 	"github.com/spf13/viper"
-	"os"
 )
 
 type DefaultGenerator struct {
@@ -41,20 +40,7 @@ func (g *DefaultGenerator) Generate() string {
 			if err != nil {
 				panic(err)
 			}
-
-			file, err := os.OpenFile(fmt.Sprintf("./.cg/output/%s", task.Output), os.O_CREATE|os.O_WRONLY, 0644)
-			if err != nil {
-				panic(err)
-			}
-			defer file.Close()
-			err = file.Truncate(0)
-			if err != nil {
-				panic(err)
-			}
-			_, err = file.WriteString(out)
-			if err != nil {
-				panic(err)
-			}
+			FileWriter{}.Write(out, fmt.Sprintf("./.cg/output/%s", task.Output))
 		}
 	}
 	return ""
