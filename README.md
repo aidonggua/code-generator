@@ -15,6 +15,7 @@ go build -o cg main.go
 ### 2. 初始化.cg工作环境
 在需要生成代码的项目根目录里使用 `cg init` 命令，会在项目根目录生成 `.cg` 文件夹，用于存放模板文件、配置文件以及输出的文件。
 ```shell
+cd <your_project_directory>
 cg init
 ```
 
@@ -31,7 +32,9 @@ cg init
     └── mapper.xml.tpl
 ```
 ### 3. 自定义文件模板
-在 `.cg/templates` 文件夹下创建模板文件，例如创建一个 `entity.tpl` 文件，用于生成java entity的模板文件。
+init命令会默认生成3个模版文件，可以根据不同的项目需求，在 `.cg/templates` 文件夹下创建或者修改模板文件  
+
+例如自动生成的`entity.tpl` 文件，可用于生成java entity类
 ```text
 package {{ task.Variables.package }};
 
