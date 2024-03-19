@@ -1,4 +1,4 @@
-package com.sample.domain;
+package com.example.dao.domain;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class User {
     /** 主键 */
-    private Integer id;
+    private Long id;
     /** 姓名 */
     private String name;
     /** 年龄 */
@@ -23,5 +23,5 @@ public class User {
     /** 修改时间 */
     private Date gmtModify;
     /** 删除标记 */
-    private Boolean deleted;
+    private Byte deleted;
 }

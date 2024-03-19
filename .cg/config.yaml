@@ -1,6 +1,4 @@
-project:
-  src-path: src/main/java
-  base-package: com.sample
+# config file of code generator
 mysql:
   username: root
   password: root
@@ -8,10 +6,25 @@ mysql:
   port: 3306
   database: test
 tasks:
-  - name: generate-entity                               # task name
+  - name: entity                                        # task name
     template: entity.tpl                                # template file from .cg/templates folder
-    type: table_to_entity                               # table to entity
-    sub-package: domain                                 # sub package
-    source: user                                        # table name
+    source-type: mysql                                  # table to entity
+    table: user                                         # table name
     output: User.java                                   # output file name
+    variables:                                          # variables for template
+      package: com.example.dao.domain
     enable: true                                        # enable or disable the task
+  - name: mapper
+    template: mapper.tpl
+    source-type: mysql
+    table: user
+    output: UserMapper.java
+    variables:
+      package: com.example.dao.mapper
+    enable: true
+  - name: mapper_xml
+    template: mapper.xml.tpl
+    source-type: mysql
+    table: user
+    output: UserMapper.xml
+    enable: true
