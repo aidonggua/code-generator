@@ -15,10 +15,7 @@ func (t *TypeTransformer) DbToJava(dbType string) string {
 	if dbType == "int" || strings.Contains(dbType, "bigint") {
 		return "Integer"
 	}
-	if strings.Contains(dbType, "varchar") {
-		return "String"
-	}
-	if dbType == "text" || strings.Contains(dbType, "text") {
+	if strings.Contains(dbType, "varchar") || dbType == "text" || strings.Contains(dbType, "text") {
 		return "String"
 	}
 	if dbType == "decimal" || strings.Contains(dbType, "decimal") {
@@ -57,6 +54,25 @@ func (t *TypeTransformer) DbToJDBC(dbType string) string {
 	}
 	if dbType == "time" {
 		return "TIME"
+	}
+	return "Unknown"
+}
+
+func (t *TypeTransformer) DbToGo(dbType string) string {
+	if dbType == "tinyint" || strings.Contains(dbType, "tinyint") || dbType == "bigint" || strings.Contains(dbType, "bigint") {
+		return "int64"
+	}
+	if dbType == "int" || strings.Contains(dbType, "int") {
+		return "int"
+	}
+	if strings.Contains(dbType, "varchar") || dbType == "text" || strings.Contains(dbType, "text") {
+		return "string"
+	}
+	if dbType == "decimal" || strings.Contains(dbType, "decimal") {
+		return "float64"
+	}
+	if dbType == "timestamp" || dbType == "datetime" || dbType == "date" || dbType == "time" {
+		return "time.Time"
 	}
 	return "Unknown"
 }

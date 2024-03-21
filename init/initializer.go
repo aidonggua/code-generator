@@ -17,31 +17,43 @@ mysql:
   port: 3306
   database: test
 tasks:
-  - name: entity                                        # task name
-    template: entity.tpl                                # template file from .cg/templates folder
+  # 生成java实体
+  - name: java_entity                                   # task name
+    template: java.entity.tpl                           # template file from .cg/templates folder
     source-type: mysql                                  # table to entity
     table: user                                         # table name
     output: User.java                                   # output file name
     variables:                                          # variables for template
       package: com.example.dao.domain
-    enable: true                                        # enable or disable the task
-  - name: mapper
-    template: mapper.tpl
+    enable: true
+  # 生成java mapper类
+  - name: java_mapper
+    template: java.mapper.tpl
     source-type: mysql
     table: user
     output: UserMapper.java
     variables:
       package: com.example.dao.mapper
     enable: true
-  - name: mapper_xml
-    template: mapper.xml.tpl
+  # 生成java mybatis 的xml文件
+  - name: java_mapper_xml
+    template: java.mapper.xml.tpl
     source-type: mysql
     table: user
     output: UserMapper.xml
     enable: true
+  # 生成go实体
+  - name: go_entity
+    template: go.entity.tpl
+    source-type: mysql
+    table: user
+    output: user.go
+    variables:
+      package: domain
+    enable: true
 `
 
-const entityTpl = `package {{.Task.Variables.package}};
+const javaEntityTpl = `package {{.Task.Variables.package}};
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
@@ -59,7 +71,7 @@ public class {{titleCamelCase .Task.Table}} {
 {{end}}
 }`
 
-const mapperTpl = `package {{.Task.Variables.package}};
+const javaMapperTpl = `package {{.Task.Variables.package}};
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import {{.Refs.entity.Variables.package}}.{{titleCamelCase .Table.Name}};
@@ -68,7 +80,7 @@ public interface {{titleCamelCase .Table.Name}}Mapper extends BaseMapper<{{title
 
 }`
 
-const mapperXmlTpl = `<?xml version="1.0" encoding="UTF-8"?>
+const javaMapperXmlTpl = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="{{.Refs.mapper.Variables.package}}.{{titleCamelCase .Table.Name}}Mapper">
     <resultMap id="BaseResultMap" type="{{.Refs.entity.Variables.package}}.{{titleCamelCase .Table.Name}}">
@@ -85,6 +97,18 @@ const mapperXmlTpl = `<?xml version="1.0" encoding="UTF-8"?>
     </sql>
 </mapper>`
 
+const goEntityTpl = `package {{.Task.Variables.package}};
+
+type {{title .Table.Name}} struct {
+{{- range .Table.Columns}}
+    {{titleCamelCase .Name}} {{dbToGo .Type}}` + " `json" + "\"{{.Name}}\"` " + `// {{.Comment -}}
+{{end}}
+}
+
+func (*{{title .Table.Name}}) TableName() string {
+	return "{{.Table.Name}}"
+}`
+
 func (i *Initializer) Init() {
 	// check if .cg folder exists
 	if _, err := os.Stat(".cg"); err == nil {
@@ -95,8 +119,9 @@ func (i *Initializer) Init() {
 	generator.FileWriter{}.CreateFolder(".cg/output")
 	generator.FileWriter{}.CreateFolder(".cg/templates")
 	generator.FileWriter{}.Write(configYaml, ".cg/config.yaml")
-	generator.FileWriter{}.Write(entityTpl, ".cg/templates/entity.tpl")
-	generator.FileWriter{}.Write(mapperTpl, ".cg/templates/mapper.tpl")
-	generator.FileWriter{}.Write(mapperXmlTpl, ".cg/templates/mapper.xml.tpl")
+	generator.FileWriter{}.Write(javaEntityTpl, ".cg/templates/java.entity.tpl")
+	generator.FileWriter{}.Write(javaMapperTpl, ".cg/templates/java.mapper.tpl")
+	generator.FileWriter{}.Write(javaMapperXmlTpl, ".cg/templates/java.mapper.xml.tpl")
+	generator.FileWriter{}.Write(goEntityTpl, ".cg/templates/go.entity.tpl")
 	fmt.Println("Initialized successfully.")
 }

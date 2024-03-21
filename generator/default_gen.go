@@ -35,6 +35,7 @@ func (g *DefaultGenerator) Generate() string {
 			"lowerCase":      strings.ToLower,
 			"dbToJava":       transformer.DbToJava,
 			"dbToJDBC":       transformer.DbToJDBC,
+			"dbToGo":         transformer.DbToGo,
 		}).ParseFiles(".cg/templates/" + task.Template)
 		if err != nil {
 			panic(err)
