@@ -1,7 +1,8 @@
-package {{ task.Variables.package }};
+package {{.Task.Variables.package}};
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import {{ refs.entity.Variables.package }}.{{ transformer.Case.Title(transformer.Case.CamelCase(refs.entity.Table)) }};
+import {{.Refs.entity.Variables.package}}.{{titleCamelCase .Table.Name}};
 
-public interface {{ transformer.Case.Title(transformer.Case.CamelCase(task.Table)) }}Mapper extends BaseMapper<{{ transformer.Case.Title(transformer.Case.CamelCase(refs.entity.Table)) }}>{
+public interface {{titleCamelCase .Table.Name}}Mapper extends BaseMapper<{{titleCamelCase .Table.Name}}> {
+
 }

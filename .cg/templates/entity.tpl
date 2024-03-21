@@ -1,4 +1,4 @@
-package {{ task.Variables.package }};
+package {{.Task.Variables.package}};
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class {{ transformer.Case.Title(transformer.Case.CamelCase(task.Table)) }} {
-{% for column in table.Columns %}    /** {{ column.Comment }} */
-    private {{ transformer.Type.DbToJava(column.Type) }} {{ transformer.Case.CamelCase(column.Name) }};
-{% endfor %}}
+public class {{titleCamelCase .Task.Table}} {
+{{- range .Table.Columns}}
+    /** {{.Comment}} */
+    private {{dbToJava .Type}} {{camelCase .Name}}{{";" -}}
+{{end}}
+}

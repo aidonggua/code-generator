@@ -5,8 +5,8 @@ import "strings"
 type CaseTransformer struct {
 }
 
-func (*CaseTransformer) Title(s string) string {
-	return strings.Title(s)
+func (t *CaseTransformer) TitleCamelCase(s string) string {
+	return strings.Title(t.CamelCase(s))
 }
 
 func (*CaseTransformer) CamelCase(s string) string {

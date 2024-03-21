@@ -1,10 +1,12 @@
 package generator
 
 import (
+	"bytes"
 	"code-generator/transform"
 	"fmt"
-	"github.com/flosch/pongo2/v6"
 	"github.com/spf13/viper"
+	"strings"
+	"text/template"
 )
 
 type DefaultGenerator struct {
@@ -22,31 +24,49 @@ func (g *DefaultGenerator) Generate() string {
 	}()
 
 	for _, task := range g.tasks {
-		tpl, err := pongo2.FromFile(".cg/templates/" + task.Template)
+		transformer := transform.Transformer{}
+		// 解析指定文件生成模板对象
+		tpl, err := template.New(task.Template).Funcs(template.FuncMap{
+			"titleCamelCase": transformer.TitleCamelCase,
+			"camelCase":      transformer.CamelCase,
+			"snakeCase":      transform.Transformer{}.SnakeCase,
+			"title":          strings.Title,
+			"upperCase":      strings.ToUpper,
+			"lowerCase":      strings.ToLower,
+			"dbToJava":       transformer.DbToJava,
+			"dbToJDBC":       transformer.DbToJDBC,
+		}).ParseFiles(".cg/templates/" + task.Template)
 		if err != nil {
 			panic(err)
 		}
 
+		var table *Table
 		if task.SourceType == "mysql" {
-			var table *Table
 			if g.conn == nil {
 				g.conn = &MysqlConnector{DatabaseName: g.configMap["mysql.database"].(string), Username: g.configMap["mysql.username"].(string), Password: g.configMap["mysql.password"].(string), Host: g.configMap["mysql.host"].(string), Port: g.configMap["mysql.port"].(int)}
 				g.conn.connect()
 			}
 
 			table = TableInfo(g.conn.db, task.Table)
-
-			out, err := tpl.Execute(pongo2.Context{
-				"task":        task,
-				"table":       table,
-				"transformer": &transform.Transformer{},
-				"refs":        g.refs,
-			})
-			if err != nil {
-				panic(err)
-			}
-			FileWriter{}.Write(out, fmt.Sprintf("./.cg/output/%s", task.Output))
 		}
+
+		var buffer bytes.Buffer
+		err = tpl.Execute(&buffer, struct {
+			Task        *Task
+			Table       *Table
+			Transformer *transform.Transformer
+			Refs        map[string]*Task
+		}{
+			Task:        task,
+			Table:       table,
+			Transformer: &transform.Transformer{},
+			Refs:        g.refs,
+		})
+		if err != nil {
+			panic(err)
+		}
+
+		FileWriter{}.Write(buffer.String(), fmt.Sprintf("./.cg/output/%s", task.Output))
 	}
 	return ""
 }

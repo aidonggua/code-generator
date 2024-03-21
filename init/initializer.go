@@ -41,7 +41,7 @@ tasks:
     enable: true
 `
 
-const entityTpl = `package {{ task.Variables.package }};
+const entityTpl = `package {{.Task.Variables.package}};
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
@@ -52,28 +52,37 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class {{ transformer.Case.Title(transformer.Case.CamelCase(task.Table)) }} {
-{% for column in table.Columns %}    /** {{ column.Comment }} */
-    private {{ transformer.Type.DbToJava(column.Type) }} {{ transformer.Case.CamelCase(column.Name) }};
-{% endfor %}}`
+public class {{titleCamelCase .Task.Table}} {
+{{- range .Table.Columns}}
+    /** {{.Comment}} */
+    private {{dbToJava .Type}} {{camelCase .Name}}{{";" -}}
+{{end}}
+}`
 
-const mapperTpl = `package {{ task.Variables.package }};
+const mapperTpl = `package {{.Task.Variables.package}};
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import {{ refs.entity.Variables.package }}.{{ transformer.Case.Title(transformer.Case.CamelCase(refs.entity.Table)) }};
+import {{.Refs.entity.Variables.package}}.{{titleCamelCase .Table.Name}};
 
-public interface {{ transformer.Case.Title(transformer.Case.CamelCase(task.Table)) }}Mapper extends BaseMapper<{{ transformer.Case.Title(transformer.Case.CamelCase(refs.entity.Table)) }}>{
+public interface {{titleCamelCase .Table.Name}}Mapper extends BaseMapper<{{titleCamelCase .Table.Name}}> {
+
 }`
 
 const mapperXmlTpl = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="{{ refs.mapper.Variables.package }}.{{ transformer.Case.Title(transformer.Case.CamelCase(refs.entity.Table)) }}Mapper">
-  <resultMap id="BaseResultMap" type="{{ refs.entity.Variables.package }}.{{ transformer.Case.Title(transformer.Case.CamelCase(refs.entity.Table)) }}">
-{% for column in table.Columns %}    <id column="{{ column.Name }}" jdbcType="{{ transformer.Type.DbToJDBC(column.Type) }}" property="{{ transformer.Case.CamelCase(column.Name) }}" />
-{% endfor %}  </resultMap>
-  <sql id="Base_Column_List">
-    {% for column in table.Columns %}{{ column.Name }},{% endfor %}
-  </sql>
+<mapper namespace="{{.Refs.mapper.Variables.package}}.{{titleCamelCase .Table.Name}}Mapper">
+    <resultMap id="BaseResultMap" type="{{.Refs.entity.Variables.package}}.{{titleCamelCase .Table.Name}}">
+    {{range .Table.Columns -}}
+        {{"    "}}<id column="{{.Name}}" jdbcType="{{dbToJDBC .Type}}" property="{{camelCase .Name}}" />
+    {{end -}}
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    {{"    " -}}
+    {{range $i,$v := .Table.Columns -}}
+        {{if ne $i 0}},{{end}}{{.Name -}}
+    {{end}}
+    </sql>
 </mapper>`
 
 func (i *Initializer) Init() {

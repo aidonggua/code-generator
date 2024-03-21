@@ -1,10 +1,9 @@
 # code-generator
 一个有意思的代码生成器
-- [x] 表 ---> java entity
-- [x] 表 ---> mapper、mapper.xml
-- [ ] 表 ---> service、serviceImpl
-- [ ] 表 ---> controller
-- [ ] 表 ---> vue页面
+- [x] java 模版
+- [x] 任务引用
+- [ ] 依赖上下文
+- [ ] go 模版
 
 ## 使用方法
 ### 1. 编译（或者直接下载）code-generator，并将可执行文件放到系统环境变量中
