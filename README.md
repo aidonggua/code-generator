@@ -6,7 +6,6 @@
 - [x] 类型转换指令
 - [x] 日期指令
 - [ ] 导入上下文
-- [ ] go 模版
 
 ## 使用方法
 ### 1. 编译（或者直接下载）code-generator，并将可执行文件放到系统环境变量中
@@ -24,18 +23,23 @@ cg init
 
 .cg文件夹结构如下：
 ```text
+tree .cg                                                                                                                                                                                                                                                                                                       ─╯
 ├── config.yaml
 ├── output
 │   ├── User.java
 │   ├── UserMapper.java
-│   └── UserMapper.xml
+│   ├── UserMapper.xml
+│   └── user.go
 └── templates
-    ├── entity.tpl
-    ├── mapper.tpl
-    └── mapper.xml.tpl
+    ├── go
+    │   └── go.entity.tpl
+    └── java
+        ├── entity.tpl
+        ├── mapper.tpl
+        └── mapper.xml.tpl
 ```
 ### 3. 自定义文件模板
-init命令会默认生成3个模版文件，可以根据不同的项目需求，在 `.cg/templates` 文件夹下创建或者修改模板文件  
+init命令会默认生成常用模版文件，可以根据不同的项目需求，在 `.cg/templates` 文件夹下创建或者修改模板文件  
 
 例如自动生成的`entity.tpl` 文件，可用于生成java entity类
 ```text
@@ -66,27 +70,39 @@ mysql:
   port: 3306
   database: test
 tasks:
-  - name: entity                                        # task name
-    template: entity.tpl                                # template file from .cg/templates folder
+  # 生成java实体
+  - name: java_entity                                   # task name
+    template: java/entity.tpl                           # template file from .cg/templates folder
     source-type: mysql                                  # table to entity
     table: user                                         # table name
     output: User.java                                   # output file name
     variables:                                          # variables for template
       package: com.example.dao.domain
-    enable: true                                        # enable or disable the task
-  - name: mapper
-    template: mapper.tpl
+    enable: true
+  # 生成java mapper类
+  - name: java_mapper
+    template: java/mapper.tpl
     source-type: mysql
     table: user
     output: UserMapper.java
     variables:
       package: com.example.dao.mapper
     enable: true
-  - name: mapper_xml
-    template: mapper.xml.tpl
+  # 生成java mybatis 的xml文件
+  - name: java_mapper_xml
+    template: java/mapper.xml.tpl
     source-type: mysql
     table: user
     output: UserMapper.xml
+    enable: true
+  # 生成go实体
+  - name: go_entity
+    template: go/entity.tpl
+    source-type: mysql
+    table: user
+    output: user.go
+    variables:
+      package: domain
     enable: true
 ```
 ### 5. 生成代码
