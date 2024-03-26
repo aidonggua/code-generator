@@ -12,6 +12,7 @@
 ```shell
 go build -o cg main.go
 mv ./cg ~/bin/cg
+cg version
 ```
 
 ### 2. 初始化.cg工作环境
@@ -23,7 +24,7 @@ cg init
 
 .cg文件夹结构如下：
 ```text
-tree .cg                                                                                                                                                                                                                                                                                                       ─╯
+tree .cg
 ├── config.yaml
 ├── output
 │   ├── User.java

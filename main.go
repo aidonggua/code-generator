@@ -12,8 +12,13 @@ func main() {
 	gen := &generator.DefaultGenerator{}
 
 	args := os.Args
-	if len(args) < 2 || len(args) > 2 || (args[1] != "init" && args[1] != "run") {
-		fmt.Println("Usage: cg <init> | <run>")
+	if len(args) < 2 || len(args) > 2 || args[1] == "help" || (args[1] != "init" && args[1] != "run" && args[1] != "version") {
+		fmt.Println("Usage: cg <init> | <run> | <version> | <help>")
+		return
+	}
+
+	if args[1] == "version" {
+		fmt.Println("v0.1.0")
 		return
 	}
 
