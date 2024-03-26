@@ -5,7 +5,7 @@
 - [x] 字符串转换指令
 - [x] 类型转换指令
 - [x] 日期指令
-- [ ] 导入上下文
+- [x] 导入上下文
 
 ## 使用方法
 ### 1. 编译（或者直接下载）code-generator，并将可执行文件放到系统环境变量中
@@ -24,46 +24,56 @@ cg init
 
 .cg文件夹结构如下：
 ```text
-tree .cg
+.cg
 ├── config.yaml
 ├── output
 │   ├── User.java
 │   ├── UserMapper.java
-│   ├── UserMapper.xml
-│   └── user.go
+│   └── UserMapper.xml
 └── templates
-    ├── go
-    │   └── go.entity.tpl
-    └── java
-        ├── entity.tpl
-        ├── mapper.tpl
-        └── mapper.xml.tpl
+    ├── java_entity.tpl
+    ├── java_mapper.tpl
+    └── java_mapper_xml.tpl
 ```
 ### 3. 自定义文件模板
 init命令会默认生成常用模版文件，可以根据不同的项目需求，在 `.cg/templates` 文件夹下创建或者修改模板文件  
 
 例如自动生成的`entity.tpl` 文件，可用于生成java entity类
 ```text
-package {{ task.Variables.package }};
+package {{.Task.Variables.package}};
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-
+{{""}}
+{{- range .Imports}}
+{{.}}
+{{end -}}
+{{""}}
+/**
+* {{.Table.Name}}
+*
+* @Author {{""}}
+* @Date {{now}}
+*/
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class {{ transformer.Case.Title(transformer.Case.CamelCase(task.Table)) }} {
-{% for column in table.Columns %}    /** {{ column.Comment }} */
-    private {{ transformer.Type.DbToJava(column.Type) }} {{ transformer.Case.CamelCase(column.Name) }};
-{% endfor %}}
+public class {{titleCamelCase .Task.Table}} {
+{{- range .Table.Columns}}
+    /** {{.Comment}} */
+    private {{dbToJava .Type}} {{camelCase .Name}}{{";" -}}
+{{end}}
+}
 ```
 ### 4. 配置task
 在 `.cg/config.yaml` 文件中配置task，例如生成entity文件的任务。
 ```yaml
 # config file of code generator
+global:
+  author: melon
 mysql:
   username: root
   password: root
@@ -72,8 +82,8 @@ mysql:
   database: test
 tasks:
   # 生成java实体
-  - name: java_entity                                   # task name
-    template: java/entity.tpl                           # template file from .cg/templates folder
+  - name: JavaEntity                                    # task name
+    template: java_entity.tpl                           # template file from .cg/templates folder
     source-type: mysql                                  # table to entity
     table: user                                         # table name
     output: User.java                                   # output file name
@@ -81,8 +91,8 @@ tasks:
       package: com.example.dao.domain
     enable: true
   # 生成java mapper类
-  - name: java_mapper
-    template: java/mapper.tpl
+  - name: JavaMapper
+    template: java_mapper.tpl
     source-type: mysql
     table: user
     output: UserMapper.java
@@ -90,20 +100,11 @@ tasks:
       package: com.example.dao.mapper
     enable: true
   # 生成java mybatis 的xml文件
-  - name: java_mapper_xml
-    template: java/mapper.xml.tpl
+  - name: JavaMapperXml
+    template: java_mapper_xml.tpl
     source-type: mysql
     table: user
     output: UserMapper.xml
-    enable: true
-  # 生成go实体
-  - name: go_entity
-    template: go/entity.tpl
-    source-type: mysql
-    table: user
-    output: user.go
-    variables:
-      package: domain
     enable: true
 ```
 ### 5. 生成代码

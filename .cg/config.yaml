@@ -1,4 +1,6 @@
 # config file of code generator
+global:
+  author: melon
 mysql:
   username: root
   password: root
@@ -7,8 +9,8 @@ mysql:
   database: test
 tasks:
   # 生成java实体
-  - name: java_entity                                   # task name
-    template: java/entity.tpl                           # template file from .cg/templates folder
+  - name: JavaEntity                                    # task name
+    template: java_entity.tpl                           # template file from .cg/templates folder
     source-type: mysql                                  # table to entity
     table: user                                         # table name
     output: User.java                                   # output file name
@@ -16,8 +18,8 @@ tasks:
       package: com.example.dao.domain
     enable: true
   # 生成java mapper类
-  - name: java_mapper
-    template: java/mapper.tpl
+  - name: JavaMapper
+    template: java_mapper.tpl
     source-type: mysql
     table: user
     output: UserMapper.java
@@ -25,18 +27,9 @@ tasks:
       package: com.example.dao.mapper
     enable: true
   # 生成java mybatis 的xml文件
-  - name: java_mapper_xml
-    template: java/mapper.xml.tpl
+  - name: JavaMapperXml
+    template: java_mapper_xml.tpl
     source-type: mysql
     table: user
     output: UserMapper.xml
-    enable: true
-  # 生成go实体
-  - name: go_entity
-    template: go/entity.tpl
-    source-type: mysql
-    table: user
-    output: user.go
-    variables:
-      package: domain
     enable: true

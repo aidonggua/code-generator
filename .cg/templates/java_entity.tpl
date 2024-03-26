@@ -4,7 +4,17 @@ import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-
+{{""}}
+{{- range .Imports}}
+{{.}}
+{{end -}}
+{{""}}
+/**
+* {{.Table.Name}}
+*
+* @Author {{""}}
+* @Date {{now}}
+*/
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

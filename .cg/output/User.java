@@ -5,6 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
+/**
+* user
+*
+* @Author 
+* @Date 2024-03-26 16:13:31
+*/
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

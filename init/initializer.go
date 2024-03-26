@@ -10,6 +10,8 @@ type Initializer struct {
 }
 
 const configYaml = `# config file of code generator
+global:
+  author: melon
 mysql:
   username: root
   password: root
@@ -18,8 +20,8 @@ mysql:
   database: test
 tasks:
   # 生成java实体
-  - name: java_entity                                   # task name
-    template: java/entity.tpl                           # template file from .cg/templates folder
+  - name: JavaEntity                                    # task name
+    template: java_entity.tpl                           # template file from .cg/templates folder
     source-type: mysql                                  # table to entity
     table: user                                         # table name
     output: User.java                                   # output file name
@@ -27,8 +29,8 @@ tasks:
       package: com.example.dao.domain
     enable: true
   # 生成java mapper类
-  - name: java_mapper
-    template: java/mapper.tpl
+  - name: JavaMapper
+    template: java_mapper.tpl
     source-type: mysql
     table: user
     output: UserMapper.java
@@ -36,20 +38,11 @@ tasks:
       package: com.example.dao.mapper
     enable: true
   # 生成java mybatis 的xml文件
-  - name: java_mapper_xml
-    template: java/mapper.xml.tpl
+  - name: JavaMapperXml
+    template: java_mapper_xml.tpl
     source-type: mysql
     table: user
     output: UserMapper.xml
-    enable: true
-  # 生成go实体
-  - name: go_entity
-    template: go/entity.tpl
-    source-type: mysql
-    table: user
-    output: user.go
-    variables:
-      package: domain
     enable: true
 `
 
@@ -59,7 +52,17 @@ import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-
+{{""}}
+{{- range .Imports}}
+{{.}}
+{{end -}}
+{{""}}
+/**
+* {{.Table.Name}}
+*
+* @Author {{""}}
+* @Date {{now}}
+*/
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -74,7 +77,7 @@ public class {{titleCamelCase .Task.Table}} {
 const javaMapperTpl = `package {{.Task.Variables.package}};
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import {{.Refs.entity.Variables.package}}.{{titleCamelCase .Table.Name}};
+import {{.Refs.JavaEntity.Variables.package}}.{{titleCamelCase .Table.Name}};
 
 public interface {{titleCamelCase .Table.Name}}Mapper extends BaseMapper<{{titleCamelCase .Table.Name}}> {
 
@@ -82,8 +85,8 @@ public interface {{titleCamelCase .Table.Name}}Mapper extends BaseMapper<{{title
 
 const javaMapperXmlTpl = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="{{.Refs.mapper.Variables.package}}.{{titleCamelCase .Table.Name}}Mapper">
-    <resultMap id="BaseResultMap" type="{{.Refs.entity.Variables.package}}.{{titleCamelCase .Table.Name}}">
+<mapper namespace="{{.Refs.JavaMapper.Variables.package}}.{{titleCamelCase .Table.Name}}Mapper">
+    <resultMap id="BaseResultMap" type="{{.Refs.JavaEntity.Variables.package}}.{{titleCamelCase .Table.Name}}">
     {{range .Table.Columns -}}
         {{"    "}}<id column="{{.Name}}" jdbcType="{{dbToJDBC .Type}}" property="{{camelCase .Name}}" />
     {{end -}}
@@ -97,18 +100,6 @@ const javaMapperXmlTpl = `<?xml version="1.0" encoding="UTF-8"?>
     </sql>
 </mapper>`
 
-const goEntityTpl = `package {{.Task.Variables.package}};
-
-type {{title .Table.Name}} struct {
-{{- range .Table.Columns}}
-    {{titleCamelCase .Name}} {{dbToGo .Type}}` + " `json" + "\"{{.Name}}\"` " + `// {{.Comment -}}
-{{end}}
-}
-
-func (*{{title .Table.Name}}) TableName() string {
-	return "{{.Table.Name}}"
-}`
-
 func (i *Initializer) Init() {
 	// check if .cg folder exists
 	if _, err := os.Stat(".cg"); err == nil {
@@ -119,9 +110,8 @@ func (i *Initializer) Init() {
 	generator.FileWriter{}.CreateFolder(".cg/output")
 	generator.FileWriter{}.CreateFolder(".cg/templates")
 	generator.FileWriter{}.Write(configYaml, ".cg/config.yaml")
-	generator.FileWriter{}.Write(javaEntityTpl, ".cg/templates/java/entity.tpl")
-	generator.FileWriter{}.Write(javaMapperTpl, ".cg/templates/java/mapper.tpl")
-	generator.FileWriter{}.Write(javaMapperXmlTpl, ".cg/templates/java/mapper.xml.tpl")
-	generator.FileWriter{}.Write(goEntityTpl, ".cg/templates/go/entity.tpl")
+	generator.FileWriter{}.Write(javaEntityTpl, ".cg/templates/java_entity.tpl")
+	generator.FileWriter{}.Write(javaMapperTpl, ".cg/templates/java_mapper.tpl")
+	generator.FileWriter{}.Write(javaMapperXmlTpl, ".cg/templates/java_mapper_xml.tpl")
 	fmt.Println("Initialized successfully.")
 }

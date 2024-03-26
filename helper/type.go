@@ -1,6 +1,8 @@
 package helper
 
-import "strings"
+import (
+	"strings"
+)
 
 type TypeHelper struct {
 }
@@ -75,4 +77,14 @@ func (t *TypeHelper) DbToGo(dbType string) string {
 		return "time.Time"
 	}
 	return "Unknown"
+}
+
+func (t *TypeHelper) DbToJavaImport(dbType string) string {
+	if dbType == "decimal" || strings.Contains(dbType, "decimal") {
+		return "import java.math.BigDecimal;"
+	}
+	if dbType == "timestamp" || dbType == "datetime" || dbType == "date" || dbType == "time" {
+		return "import java.util.Date;"
+	}
+	return ""
 }
