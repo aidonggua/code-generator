@@ -1,15 +1,15 @@
-package transform
+package helper
 
 import "strings"
 
-type CaseTransformer struct {
+type CaseHelper struct {
 }
 
-func (t *CaseTransformer) TitleCamelCase(s string) string {
-	return strings.Title(t.CamelCase(s))
+func (c *CaseHelper) TitleCamelCase(s string) string {
+	return strings.Title(c.CamelCase(s))
 }
 
-func (*CaseTransformer) CamelCase(s string) string {
+func (*CaseHelper) CamelCase(s string) string {
 	words := strings.FieldsFunc(s, func(r rune) bool { return r == ' ' || r == '_' })
 	result := ""
 	for i, word := range words {
@@ -23,7 +23,7 @@ func (*CaseTransformer) CamelCase(s string) string {
 	return result
 }
 
-func (*CaseTransformer) SnakeCase(s string) string {
+func (*CaseHelper) SnakeCase(s string) string {
 	words := strings.FieldsFunc(s, func(r rune) bool { return r == ' ' || r == '_' })
 	result := ""
 	for i, word := range words {

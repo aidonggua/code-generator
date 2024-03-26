@@ -2,7 +2,7 @@ package generator
 
 import (
 	"bytes"
-	"code-generator/transform"
+	"code-generator/helper"
 	"fmt"
 	"github.com/spf13/viper"
 	"strings"
@@ -24,18 +24,21 @@ func (g *DefaultGenerator) Generate() string {
 	}()
 
 	for _, task := range g.tasks {
-		transformer := transform.Transformer{}
+		h := helper.Helper{}
 		// 解析指定文件生成模板对象
 		tpl, err := template.New(task.Template).Funcs(template.FuncMap{
-			"titleCamelCase": transformer.TitleCamelCase,
-			"camelCase":      transformer.CamelCase,
-			"snakeCase":      transform.Transformer{}.SnakeCase,
+			"titleCamelCase": h.TitleCamelCase,
+			"camelCase":      h.CamelCase,
+			"snakeCase":      h.SnakeCase,
 			"title":          strings.Title,
 			"upperCase":      strings.ToUpper,
 			"lowerCase":      strings.ToLower,
-			"dbToJava":       transformer.DbToJava,
-			"dbToJDBC":       transformer.DbToJDBC,
-			"dbToGo":         transformer.DbToGo,
+			"dbToJava":       h.DbToJava,
+			"dbToJDBC":       h.DbToJDBC,
+			"dbToGo":         h.DbToGo,
+			"now":            h.Now,
+			"date":           h.Date,
+			"time":           h.Time,
 		}).ParseFiles(".cg/templates/" + task.Template)
 		if err != nil {
 			panic(err)
@@ -53,15 +56,15 @@ func (g *DefaultGenerator) Generate() string {
 
 		var buffer bytes.Buffer
 		err = tpl.Execute(&buffer, struct {
-			Task        *Task
-			Table       *Table
-			Transformer *transform.Transformer
-			Refs        map[string]*Task
+			Task   *Task
+			Table  *Table
+			Helper *helper.Helper
+			Refs   map[string]*Task
 		}{
-			Task:        task,
-			Table:       table,
-			Transformer: &transform.Transformer{},
-			Refs:        g.refs,
+			Task:   task,
+			Table:  table,
+			Helper: &helper.Helper{},
+			Refs:   g.refs,
 		})
 		if err != nil {
 			panic(err)

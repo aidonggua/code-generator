@@ -19,7 +19,7 @@ mysql:
 tasks:
   # 生成java实体
   - name: java_entity                                   # task name
-    template: java.entity.tpl                           # template file from .cg/templates folder
+    template: java/entity.tpl                           # template file from .cg/templates folder
     source-type: mysql                                  # table to entity
     table: user                                         # table name
     output: User.java                                   # output file name
@@ -28,7 +28,7 @@ tasks:
     enable: true
   # 生成java mapper类
   - name: java_mapper
-    template: java.mapper.tpl
+    template: java/mapper.tpl
     source-type: mysql
     table: user
     output: UserMapper.java
@@ -37,14 +37,14 @@ tasks:
     enable: true
   # 生成java mybatis 的xml文件
   - name: java_mapper_xml
-    template: java.mapper.xml.tpl
+    template: java/mapper.xml.tpl
     source-type: mysql
     table: user
     output: UserMapper.xml
     enable: true
   # 生成go实体
   - name: go_entity
-    template: go.entity.tpl
+    template: go/entity.tpl
     source-type: mysql
     table: user
     output: user.go
@@ -119,9 +119,9 @@ func (i *Initializer) Init() {
 	generator.FileWriter{}.CreateFolder(".cg/output")
 	generator.FileWriter{}.CreateFolder(".cg/templates")
 	generator.FileWriter{}.Write(configYaml, ".cg/config.yaml")
-	generator.FileWriter{}.Write(javaEntityTpl, ".cg/templates/java.entity.tpl")
-	generator.FileWriter{}.Write(javaMapperTpl, ".cg/templates/java.mapper.tpl")
-	generator.FileWriter{}.Write(javaMapperXmlTpl, ".cg/templates/java.mapper.xml.tpl")
-	generator.FileWriter{}.Write(goEntityTpl, ".cg/templates/go.entity.tpl")
+	generator.FileWriter{}.Write(javaEntityTpl, ".cg/templates/java/entity.tpl")
+	generator.FileWriter{}.Write(javaMapperTpl, ".cg/templates/java/mapper.tpl")
+	generator.FileWriter{}.Write(javaMapperXmlTpl, ".cg/templates/java/mapper.xml.tpl")
+	generator.FileWriter{}.Write(goEntityTpl, ".cg/templates/go/entity.tpl")
 	fmt.Println("Initialized successfully.")
 }

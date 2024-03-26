@@ -1,11 +1,11 @@
-package transform
+package helper
 
 import "strings"
 
-type TypeTransformer struct {
+type TypeHelper struct {
 }
 
-func (t *TypeTransformer) DbToJava(dbType string) string {
+func (t *TypeHelper) DbToJava(dbType string) string {
 	if dbType == "tinyint" || strings.Contains(dbType, "tinyint") {
 		return "Byte"
 	}
@@ -27,7 +27,7 @@ func (t *TypeTransformer) DbToJava(dbType string) string {
 	return "Unknown"
 }
 
-func (t *TypeTransformer) DbToJDBC(dbType string) string {
+func (t *TypeHelper) DbToJDBC(dbType string) string {
 	if dbType == "tinyint" || strings.Contains(dbType, "tinyint") {
 		return "TINYINT"
 	}
@@ -58,7 +58,7 @@ func (t *TypeTransformer) DbToJDBC(dbType string) string {
 	return "Unknown"
 }
 
-func (t *TypeTransformer) DbToGo(dbType string) string {
+func (t *TypeHelper) DbToGo(dbType string) string {
 	if dbType == "tinyint" || strings.Contains(dbType, "tinyint") || dbType == "bigint" || strings.Contains(dbType, "bigint") {
 		return "int64"
 	}
