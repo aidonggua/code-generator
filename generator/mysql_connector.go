@@ -11,13 +11,13 @@ type MysqlConnector struct {
 	Username     string
 	Password     string
 	Host         string
-	Port         int
+	Port         string
 
 	db *sql.DB
 }
 
 func (mc *MysqlConnector) connect() {
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", mc.Username, mc.Password, mc.Host, mc.Port, mc.DatabaseName))
+	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", mc.Username, mc.Password, mc.Host, mc.Port, mc.DatabaseName))
 	if err != nil {
 		panic(err.Error())
 	}

@@ -1,7 +1,7 @@
-package com.example.dao.mapper;
+package com.example.cg.dao.mapper;
 
+import com.example.cg.dao.domain.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.dao.domain.User;
 
 public interface UserMapper extends BaseMapper<User> {
 

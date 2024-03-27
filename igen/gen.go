@@ -1,9 +1,11 @@
 package igen
 
-import "code-generator/task"
+import (
+	"code-generator/generator"
+)
 
 type Generator interface {
 	Generate() string
 	LoadConfig() error
-	CurrentTask() *task.Task
+	CurrentTask() *generator.Task
 }

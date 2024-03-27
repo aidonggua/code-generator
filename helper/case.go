@@ -5,10 +5,6 @@ import "strings"
 type CaseHelper struct {
 }
 
-func (c *CaseHelper) TitleCamelCase(s string) string {
-	return strings.Title(c.CamelCase(s))
-}
-
 func (*CaseHelper) CamelCase(s string) string {
 	words := strings.FieldsFunc(s, func(r rune) bool { return r == ' ' || r == '_' })
 	result := ""

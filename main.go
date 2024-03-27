@@ -18,7 +18,7 @@ func main() {
 	}
 
 	if args[1] == "version" {
-		fmt.Println("v0.1.0")
+		fmt.Println("v0.2.0")
 		return
 	}
 

@@ -38,73 +38,80 @@ cg init
 ### 3. 自定义文件模板
 init命令会默认生成常用模版文件，可以根据不同的项目需求，在 `.cg/templates` 文件夹下创建或者修改模板文件  
 
-例如自动生成的`entity.tpl` 文件，可用于生成java entity类
+例如初始化命令自动生成的`java_entity.tpl` 文件，可用于生成java entity类
 ```text
-package {{.Task.Variables.package}};
-
+package {{config "base-package"}}.{{config "module"}}.{{var "sub-package"}};
+{{""}}
+{{- range imports}}
+{{.}}
+{{end -}}
+{{""}}
+import com.baomidou.mybatisplus.annotation.tableName;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-{{""}}
-{{- range .Imports}}
-{{.}}
-{{end -}}
-{{""}}
+
 /**
-* {{.Table.Name}}
+* {{table "name"}}
 *
-* @Author {{""}}
+* @Author {{config "author"}}
 * @Date {{now}}
 */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class {{titleCamelCase .Task.Table}} {
-{{- range .Table.Columns}}
-    /** {{.Comment}} */
-    private {{dbToJava .Type}} {{camelCase .Name}}{{";" -}}
-{{end}}
+@TableName("{{table "name"}}")
+@ApiModel(value="{{table "name"}}表实体类", description="{{table "name"}}")
+public class {{table "name" | camelCase | title}} {
+{{- range columns}}
+    @ApiModelProperty(value = "{{.comment}}")
+    @TableField("{{.name}}")
+    private {{dbToJava .type}} {{camelCase .name}}{{";"}}
+{{end -}}
 }
 ```
 ### 4. 配置task
 在 `.cg/config.yaml` 文件中配置task，例如生成entity文件的任务。
 ```yaml
-# config file of code generator
-global:
-  author: melon
 mysql:
   username: root
   password: root
   host: 127.0.0.1
   port: 3306
   database: test
+  table: user
+
+author: melon
+base-package: com.example
+module: cg
+
 tasks:
   # 生成java实体
-  - name: JavaEntity                                    # task name
-    template: java_entity.tpl                           # template file from .cg/templates folder
-    source-type: mysql                                  # table to entity
-    table: user                                         # table name
-    output: User.java                                   # output file name
-    variables:                                          # variables for template
-      package: com.example.dao.domain
+  - name: JavaEntity
+    template: java_entity.tpl
+    output: .cg/output
+    file-postfix: .java
+    variables:
+      sub-package: dao.domain
     enable: true
   # 生成java mapper类
   - name: JavaMapper
     template: java_mapper.tpl
-    source-type: mysql
-    table: user
-    output: UserMapper.java
+    output: .cg/output
+    file-postfix: Mapper.java
     variables:
-      package: com.example.dao.mapper
+      sub-package: dao.mapper
+      class-postfix: Mapper
     enable: true
   # 生成java mybatis 的xml文件
   - name: JavaMapperXml
     template: java_mapper_xml.tpl
-    source-type: mysql
-    table: user
-    output: UserMapper.xml
+    output: .cg/output
+    file-postfix: Mapper.xml
     enable: true
 ```
 ### 5. 生成代码

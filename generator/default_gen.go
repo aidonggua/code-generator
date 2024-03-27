@@ -3,23 +3,33 @@ package generator
 import (
 	"bytes"
 	"code-generator/helper"
-	"code-generator/task"
 	"fmt"
 	"github.com/spf13/viper"
 	"golang.org/x/exp/slices"
+	"strconv"
 	"strings"
 	"text/template"
 )
 
 type DefaultGenerator struct {
-	configMap   map[string]any
-	tasks       []*task.Task
+	configMap   map[string]string
+	tasks       []*Task
 	conn        *MysqlConnector
-	refs        map[string]*task.Task
-	currentTask *task.Task
+	refs        map[string]*Task
+	currentTask *Task
 }
 
 func (g *DefaultGenerator) Generate() string {
+	g.conn = &MysqlConnector{
+		DatabaseName: g.configMap["mysql.database"],
+		Username:     g.configMap["mysql.username"],
+		Password:     g.configMap["mysql.password"],
+		Host:         g.configMap["mysql.host"],
+		Port:         g.configMap["mysql.port"],
+	}
+	g.conn.connect()
+
+	table := TableInfo(g.conn.db, g.configMap["mysql.table"])
 	defer func() {
 		if g.conn != nil {
 			g.conn.close()
@@ -28,38 +38,34 @@ func (g *DefaultGenerator) Generate() string {
 
 	h := helper.Helper{}
 	funcMap := template.FuncMap{
-		"titleCamelCase": h.TitleCamelCase,
-		"camelCase":      h.CamelCase,
-		"snakeCase":      h.SnakeCase,
-		"title":          strings.Title,
-		"upperCase":      strings.ToUpper,
-		"lowerCase":      strings.ToLower,
-		"dbToJava":       h.DbToJava,
-		"dbToJDBC":       h.DbToJDBC,
-		"dbToGo":         h.DbToGo,
-		"now":            h.Now,
-		"date":           h.Date,
-		"time":           h.Time,
+		"camelCase": h.CamelCase,
+		"snakeCase": h.SnakeCase,
+		"title":     strings.Title,
+		"upperCase": strings.ToUpper,
+		"lowerCase": strings.ToLower,
+		"dbToJava":  h.DbToJava,
+		"dbToJDBC":  h.DbToJDBC,
+		"dbToGo":    h.DbToGo,
+		"now":       h.Now,
+		"date":      h.Date,
+		"time":      h.Time,
+		"config": func(key string) string {
+			return g.configMap[key]
+		},
+		"string": func(i any) string {
+			switch v := i.(type) {
+			case string:
+				return v
+			case int:
+				return strconv.Itoa(v)
+			default:
+				return ""
+			}
+		},
 	}
 
 	for _, t := range g.tasks {
 		g.currentTask = t
-
-		var table *Table
-		if t.SourceType == "mysql" {
-			if g.conn == nil {
-				g.conn = &MysqlConnector{
-					DatabaseName: g.configMap["mysql.database"].(string),
-					Username:     g.configMap["mysql.username"].(string),
-					Password:     g.configMap["mysql.password"].(string),
-					Host:         g.configMap["mysql.host"].(string),
-					Port:         g.configMap["mysql.port"].(int),
-				}
-				g.conn.connect()
-			}
-
-			table = TableInfo(g.conn.db, t.Table)
-		}
 
 		var imports []string
 		for _, v := range table.Columns {
@@ -69,25 +75,46 @@ func (g *DefaultGenerator) Generate() string {
 			}
 		}
 
+		funcMap["var"] = func(key string) string {
+			return t.Variables[key].(string)
+		}
+		funcMap["refs"] = func(task, key string) string {
+			return g.refs[task].Variables[key].(string)
+		}
+		funcMap["imports"] = func() []string {
+			return imports
+		}
+		tableMap := make(map[string]string)
+		tableMap["name"] = table.Name
+		funcMap["table"] = func(key string) string {
+			return tableMap[key]
+		}
+		var columnsMap []map[string]string
+		for _, v := range table.Columns {
+			columnMap := make(map[string]string)
+			columnMap["name"] = v.Name
+			columnMap["type"] = v.Type
+			columnMap["collation"] = v.Collation.String
+			columnMap["null"] = v.Null
+			columnMap["key"] = v.Key
+			columnMap["default"] = v.Default.String
+			columnMap["extra"] = v.Extra
+			columnMap["privileges"] = v.Privileges
+			columnMap["comment"] = v.Comment
+			columnsMap = append(columnsMap, columnMap)
+		}
+		funcMap["columns"] = func() []map[string]string {
+			return columnsMap
+		}
+
 		tpl, err := template.New(t.Template).Funcs(funcMap).ParseFiles(".cg/templates/" + t.Template)
 		var buffer bytes.Buffer
-		data := struct {
-			Task    *task.Task
-			Table   *Table
-			Refs    map[string]*task.Task
-			Imports []string
-		}{
-			Task:    t,
-			Table:   table,
-			Refs:    g.refs,
-			Imports: imports,
-		}
-		err = tpl.Execute(&buffer, &data)
+		err = tpl.Execute(&buffer, nil)
 		if err != nil {
 			panic(err)
 		}
 
-		FileWriter{}.Write(buffer.String(), fmt.Sprintf("./.cg/output/%s", t.Output))
+		FileWriter{}.Write(buffer.String(), fmt.Sprintf("%s/%s%s", t.Output, strings.Title(h.CamelCase(table.Name)), t.FilePostfix))
 	}
 	return ""
 }
@@ -98,22 +125,20 @@ func (g *DefaultGenerator) LoadConfig() error {
 		return fmt.Errorf("no keys found in config")
 	}
 
-	g.configMap = make(map[string]any)
-	g.refs = make(map[string]*task.Task)
-	g.tasks = []*task.Task{}
+	g.configMap = make(map[string]string)
+	g.refs = make(map[string]*Task)
+	g.tasks = []*Task{}
 	for _, key := range keys {
 		if key == "tasks" {
 			tasksConf := viper.Get("tasks")
 			for _, taskConf := range tasksConf.([]interface{}) {
 				taskConfMap := taskConf.(map[string]interface{})
-				structuredTask := &task.Task{
-					Name:       taskConfMap["name"].(string),
-					Template:   taskConfMap["template"].(string),
-					SourceType: taskConfMap["source-type"].(string),
-					Table:      taskConfMap["table"].(string),
-					Output:     taskConfMap["output"].(string),
-					Enable:     taskConfMap["enable"].(bool),
-					Imports:    make([]string, 0),
+				structuredTask := &Task{
+					Name:        taskConfMap["name"].(string),
+					Template:    taskConfMap["template"].(string),
+					Output:      taskConfMap["output"].(string),
+					FilePostfix: taskConfMap["file-postfix"].(string),
+					Enable:      taskConfMap["enable"].(bool),
 				}
 				if taskConfMap["variables"] == nil {
 					structuredTask.Variables = make(map[string]interface{})
@@ -128,13 +153,13 @@ func (g *DefaultGenerator) LoadConfig() error {
 				}
 			}
 		} else {
-			g.configMap[key] = viper.Get(key)
+			g.configMap[key] = viper.GetString(key)
 		}
 	}
 
 	return nil
 }
 
-func (g *DefaultGenerator) CurrentTask() *task.Task {
+func (g *DefaultGenerator) CurrentTask() *Task {
 	return g.currentTask
 }

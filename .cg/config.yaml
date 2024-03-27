@@ -1,35 +1,36 @@
-# config file of code generator
-global:
-  author: melon
 mysql:
   username: root
   password: root
   host: 127.0.0.1
   port: 3306
   database: test
+  table: user
+
+author: melon
+base-package: com.example
+module: cg
+
 tasks:
   # 生成java实体
-  - name: JavaEntity                                    # task name
-    template: java_entity.tpl                           # template file from .cg/templates folder
-    source-type: mysql                                  # table to entity
-    table: user                                         # table name
-    output: User.java                                   # output file name
-    variables:                                          # variables for template
-      package: com.example.dao.domain
+  - name: JavaEntity
+    template: java_entity.tpl
+    output: .cg/output
+    file-postfix: .java
+    variables:
+      sub-package: dao.domain
     enable: true
   # 生成java mapper类
   - name: JavaMapper
     template: java_mapper.tpl
-    source-type: mysql
-    table: user
-    output: UserMapper.java
+    output: .cg/output
+    file-postfix: Mapper.java
     variables:
-      package: com.example.dao.mapper
+      sub-package: dao.mapper
+      class-postfix: Mapper
     enable: true
   # 生成java mybatis 的xml文件
   - name: JavaMapperXml
     template: java_mapper_xml.tpl
-    source-type: mysql
-    table: user
-    output: UserMapper.xml
+    output: .cg/output
+    file-postfix: Mapper.xml
     enable: true

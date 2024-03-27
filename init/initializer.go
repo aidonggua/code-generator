@@ -9,93 +9,100 @@ import (
 type Initializer struct {
 }
 
-const configYaml = `# config file of code generator
-global:
-  author: melon
-mysql:
+const configYaml = `mysql:
   username: root
   password: root
   host: 127.0.0.1
   port: 3306
   database: test
+  table: user
+
+author: melon
+base-package: com.example
+module: cg
+
 tasks:
   # 生成java实体
-  - name: JavaEntity                                    # task name
-    template: java_entity.tpl                           # template file from .cg/templates folder
-    source-type: mysql                                  # table to entity
-    table: user                                         # table name
-    output: User.java                                   # output file name
-    variables:                                          # variables for template
-      package: com.example.dao.domain
+  - name: JavaEntity
+    template: java_entity.tpl
+    output: .cg/output
+    file-postfix: .java
+    variables:
+      sub-package: dao.domain
     enable: true
   # 生成java mapper类
   - name: JavaMapper
     template: java_mapper.tpl
-    source-type: mysql
-    table: user
-    output: UserMapper.java
+    output: .cg/output
+    file-postfix: Mapper.java
     variables:
-      package: com.example.dao.mapper
+      sub-package: dao.mapper
+      class-postfix: Mapper
     enable: true
   # 生成java mybatis 的xml文件
   - name: JavaMapperXml
     template: java_mapper_xml.tpl
-    source-type: mysql
-    table: user
-    output: UserMapper.xml
+    output: .cg/output
+    file-postfix: Mapper.xml
     enable: true
 `
 
-const javaEntityTpl = `package {{.Task.Variables.package}};
-
+const javaEntityTpl = `package {{config "base-package"}}.{{config "module"}}.{{var "sub-package"}};
+{{""}}
+{{- range imports}}
+{{.}}
+{{end -}}
+{{""}}
+import com.baomidou.mybatisplus.annotation.tableName;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-{{""}}
-{{- range .Imports}}
-{{.}}
-{{end -}}
-{{""}}
+
 /**
-* {{.Table.Name}}
+* {{table "name"}}
 *
-* @Author {{""}}
+* @Author {{config "author"}}
 * @Date {{now}}
 */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class {{titleCamelCase .Task.Table}} {
-{{- range .Table.Columns}}
-    /** {{.Comment}} */
-    private {{dbToJava .Type}} {{camelCase .Name}}{{";" -}}
-{{end}}
+@TableName("{{table "name"}}")
+@ApiModel(value="{{table "name"}}表实体类", description="{{table "name"}}")
+public class {{table "name" | camelCase | title}} {
+{{- range columns}}
+    @ApiModelProperty(value = "{{.comment}}")
+    @TableField("{{.name}}")
+    private {{dbToJava .type}} {{camelCase .name}}{{";"}}
+{{end -}}
 }`
 
-const javaMapperTpl = `package {{.Task.Variables.package}};
+const javaMapperTpl = `package {{config "base-package"}}.{{config "module"}}.{{var "sub-package"}};
 
+import {{config "base-package"}}.{{config "module"}}.{{refs "JavaEntity" "sub-package"}}.{{table "name" | camelCase | title}};
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import {{.Refs.JavaEntity.Variables.package}}.{{titleCamelCase .Table.Name}};
 
-public interface {{titleCamelCase .Table.Name}}Mapper extends BaseMapper<{{titleCamelCase .Table.Name}}> {
+public interface {{table "name" | camelCase | title}}Mapper extends BaseMapper<{{table "name" | camelCase | title}}> {
 
 }`
 
 const javaMapperXmlTpl = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="{{.Refs.JavaMapper.Variables.package}}.{{titleCamelCase .Table.Name}}Mapper">
-    <resultMap id="BaseResultMap" type="{{.Refs.JavaEntity.Variables.package}}.{{titleCamelCase .Table.Name}}">
-    {{range .Table.Columns -}}
-        {{"    "}}<id column="{{.Name}}" jdbcType="{{dbToJDBC .Type}}" property="{{camelCase .Name}}" />
+<mapper namespace="{{config "base-package"}}.{{config "module"}}.{{refs "JavaMapper" "sub-package"}}.{{table "name" | camelCase | title}}{{refs "JavaMapper" "class-postfix"}}">
+    <resultMap id="BaseResultMap" type="{{config "base-package"}}.{{config "module"}}.{{refs "JavaEntity" "sub-package"}}.{{table "name" | camelCase | title}}">
+    {{range columns -}}
+        {{"    "}}<id column="{{.name}}" jdbcType="{{dbToJDBC .type}}" property="{{camelCase .name}}" />
     {{end -}}
     </resultMap>
 
     <sql id="Base_Column_List">
     {{"    " -}}
-    {{range $i,$v := .Table.Columns -}}
-        {{if ne $i 0}},{{end}}{{.Name -}}
+    {{range $i,$v := columns -}}
+        {{if ne $i 0}},{{end}}{{.name -}}
     {{end}}
     </sql>
 </mapper>`
