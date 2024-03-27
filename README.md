@@ -1,5 +1,5 @@
 # code-generator
-一个有意思的代码生成器
+一个有意思的命令行代码生成器
 - [x] 常用模版
 - [x] 任务依赖+引用
 - [x] 字符串转换指令
@@ -8,11 +8,11 @@
 - [x] 导入上下文
 
 ## 使用方法
-### 1. 编译（或者直接下载）code-generator，并将可执行文件放到系统环境变量中
+### 1. 编译（或者直接下载）code-generator，并将可执行文件放到系统环境变量PATH路径里
 ```shell
 go build -o cg main.go
-mv ./cg ~/bin/cg
-cg version
+mv ./cg ~/bin/cg # 改成你的path路径
+cg version # 测试并查看版本
 ```
 
 ### 2. 初始化.cg工作环境
@@ -65,7 +65,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @TableName("{{table "name"}}")
-@ApiModel(value="{{table "name"}}表实体类", description="{{table "name"}}")
+@ApiModel(value="{{table "comment"}}实体类", description="{{table "name"}}")
 public class {{table "name" | camelCase | title}} {
 {{- range columns}}
     @ApiModelProperty(value = "{{.comment}}")

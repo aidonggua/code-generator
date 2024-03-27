@@ -29,7 +29,7 @@ func (g *DefaultGenerator) Generate() string {
 	}
 	g.conn.connect()
 
-	table := TableInfo(g.conn.db, g.configMap["mysql.table"])
+	table := TableInfo(g.conn.db, g.configMap["mysql.database"], g.configMap["mysql.table"])
 	defer func() {
 		if g.conn != nil {
 			g.conn.close()
@@ -86,6 +86,7 @@ func (g *DefaultGenerator) Generate() string {
 		}
 		tableMap := make(map[string]string)
 		tableMap["name"] = table.Name
+		tableMap["comment"] = table.Comment
 		funcMap["table"] = func(key string) string {
 			return tableMap[key]
 		}

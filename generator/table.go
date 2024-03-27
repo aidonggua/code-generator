@@ -1,9 +1,13 @@
 package generator
 
-import "database/sql"
+import (
+	"database/sql"
+	"fmt"
+)
 
 type Table struct {
 	Name    string
+	Comment string
 	Columns []Column
 }
 
@@ -19,7 +23,7 @@ type Column struct {
 	Comment    string
 }
 
-func TableInfo(db *sql.DB, tableName string) *Table {
+func TableInfo(db *sql.DB, schema, tableName string) *Table {
 	rows, err := db.Query("SHOW FULL COLUMNS FROM " + tableName)
 	if err != nil {
 		panic(err)
@@ -34,6 +38,18 @@ func TableInfo(db *sql.DB, tableName string) *Table {
 			panic(err)
 		}
 		table.Columns = append(table.Columns, column)
+	}
+
+	rows, err = db.Query(fmt.Sprintf("SELECT table_comment FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = '%s'  AND table_name = '%s'", schema, tableName))
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		err := rows.Scan(&table.Comment)
+		if err != nil {
+			panic(err)
+		}
 	}
 	return table
 }

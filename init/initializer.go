@@ -72,7 +72,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @TableName("{{table "name"}}")
-@ApiModel(value="{{table "name"}}表实体类", description="{{table "name"}}")
+@ApiModel(value="{{table "comment"}}实体类", description="{{table "name"}}")
 public class {{table "name" | camelCase | title}} {
 {{- range columns}}
     @ApiModelProperty(value = "{{.comment}}")
