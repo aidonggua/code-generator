@@ -1,14 +1,13 @@
 package {{config "base-package"}}.{{config "module"}}.{{var "sub-package"}};
 
 import {{config "base-package"}}.{{config "module"}}.{{refs "JavaEntity" "sub-package"}}.{{table "name" | camelCase | title}};
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
- * {{table "comment"}} Mapper
+ * {{table "comment"}} 业务接口
  *
  * @Author {{config "author"}}
  * @Date {{now}}
  */
-public interface {{table "name" | camelCase | title}}{{var "class-postfix"}} extends BaseMapper<{{table "name" | camelCase | title}}> {
-
+public interface {{table "name" | camelCase | title}}{{var "class-postfix"}} extends IService<{{table "name" | camelCase | title}}> {
 }

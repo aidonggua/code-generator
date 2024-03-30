@@ -12,11 +12,11 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 /**
-* {{table "name"}}
-*
-* @Author {{config "author"}}
-* @Date {{now}}
-*/
+ * {{table "comment"}} 实体类
+ *
+ * @Author {{config "author"}}
+ * @Date {{now}}
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

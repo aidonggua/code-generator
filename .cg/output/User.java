@@ -10,11 +10,11 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 /**
-* user
-*
-* @Author melon
-* @Date 2024-03-27 13:52:02
-*/
+ * 用户表 实体类
+ *
+ * @Author melon
+ * @Date 2024-03-30 11:30:39
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -40,6 +40,7 @@ func (g *DefaultGenerator) Generate() string {
 	funcMap := template.FuncMap{
 		"camelCase": h.CamelCase,
 		"snakeCase": h.SnakeCase,
+		"kebabCase": h.KebabCase,
 		"title":     strings.Title,
 		"upperCase": strings.ToUpper,
 		"lowerCase": strings.ToLower,

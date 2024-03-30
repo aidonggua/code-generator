@@ -11,7 +11,7 @@ base-package: com.example
 module: cg
 
 tasks:
-  # 生成java实体
+  # 生成java实体类
   - name: JavaEntity
     template: java_entity.tpl
     output: .cg/output
@@ -19,7 +19,7 @@ tasks:
     variables:
       sub-package: dao.domain
     enable: true
-  # 生成java mapper类
+  # 生成java mapper接口
   - name: JavaMapper
     template: java_mapper.tpl
     output: .cg/output
@@ -33,4 +33,31 @@ tasks:
     template: java_mapper_xml.tpl
     output: .cg/output
     file-postfix: Mapper.xml
+    enable: true
+  # 生成java service接口
+  - name: JavaService
+    template: java_service.tpl
+    output: .cg/output
+    file-postfix: Service.java
+    variables:
+      sub-package: service
+      class-postfix: Service
+    enable: true
+  # 生成java services实现类
+  - name: JavaServiceImpl
+    template: java_service_impl.tpl
+    output: .cg/output
+    file-postfix: ServiceImpl.java
+    variables:
+      sub-package: service.impl
+      class-postfix: ServiceImpl
+    enable: true
+  # 生成java controller类
+  - name: JavaController
+    template: java_controller.tpl
+    output: .cg/output
+    file-postfix: Controller.java
+    variables:
+      sub-package: controller
+      class-postfix: Controller
     enable: true
