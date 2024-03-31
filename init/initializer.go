@@ -160,6 +160,9 @@ import {{config "base-package"}}.{{config "module"}}.{{refs "JavaEntity" "sub-pa
 import {{config "base-package"}}.{{config "module"}}.{{refs "JavaMapper" "sub-package"}}.{{table "name" | camelCase | title}}{{refs "JavaMapper" "class-postfix"}};
 import {{config "base-package"}}.{{config "module"}}.{{refs "JavaService" "sub-package"}}.{{table "name" | camelCase | title}}{{refs "JavaService" "class-postfix"}};
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.stereotype.Service;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * {{table "comment"}} 业务实现类
@@ -167,6 +170,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
  * @Author {{config "author"}}
  * @Date {{now}}
  */
+@Slf4j
+@AllArgsConstructor
 @Service
 public class {{table "name" | camelCase | title}}{{var "class-postfix"}} extends ServiceImpl<{{table "name" | camelCase | title}}{{refs "JavaMapper" "class-postfix"}}, {{table "name" | camelCase | title}}> implements {{table "name" | camelCase | title}}{{refs "JavaService" "class-postfix"}} {
 }
@@ -175,6 +180,10 @@ public class {{table "name" | camelCase | title}}{{var "class-postfix"}} extends
 const javaControllerTpl = `package {{config "base-package"}}.{{config "module"}}.{{var "sub-package"}};
 
 import {{config "base-package"}}.{{config "module"}}.{{refs "JavaService" "sub-package"}}.{{table "name" | camelCase | title}}{{refs "JavaService" "class-postfix"}};
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * {{table "comment"}} 控制器
@@ -182,9 +191,12 @@ import {{config "base-package"}}.{{config "module"}}.{{refs "JavaService" "sub-p
  * @Author {{config "author"}}
  * @Date {{now}}
  */
+@Slf4j
+@AllArgsConstructor
 @RestController
 @RequestMapping("/{{table "name" | kebabCase}}")
 public class {{table "name" | camelCase | title}}{{var "class-postfix"}} {
+
     private {{table "name" | camelCase | title}}{{refs "JavaService" "class-postfix"}} {{table "name" | camelCase}}Service;
 }
 `
