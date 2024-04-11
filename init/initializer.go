@@ -23,69 +23,69 @@ module: cg
 
 tasks:
   # 生成java实体类
-  - name: JavaEntity
+  - name: entity
     template: java_entity.tpl
-    output: .cg/output
-    file-postfix: .java
-    variables:
-      sub-package: dao.domain
+    prefix: ""
+    postfix: ""
+    file-type: .java
+    properties:
+      sub-package: dao.entity
     enable: true
   # 生成java mapper接口
-  - name: JavaMapper
+  - name: mapper
     template: java_mapper.tpl
-    output: .cg/output
-    file-postfix: Mapper.java
-    variables:
+    prefix: ""
+    postfix: Mapper
+    file-type: .java
+    properties:
       sub-package: dao.mapper
-      class-postfix: Mapper
     enable: true
   # 生成java mybatis 的xml文件
-  - name: JavaMapperXml
+  - name: xml
     template: java_mapper_xml.tpl
-    output: .cg/output
-    file-postfix: Mapper.xml
+    prefix: ""
+    postfix: Mapper
+    file-type: .xml
     enable: true
   # 生成java service接口
-  - name: JavaService
+  - name: service
     template: java_service.tpl
-    output: .cg/output
-    file-postfix: Service.java
-    variables:
+    prefix: ""
+    postfix: Service
+    file-type: .java
+    properties:
       sub-package: service
-      class-postfix: Service
     enable: true
   # 生成java services实现类
-  - name: JavaServiceImpl
+  - name: serviceImpl
     template: java_service_impl.tpl
-    output: .cg/output
-    file-postfix: ServiceImpl.java
-    variables:
+    prefix: ""
+    postfix: ServiceImpl
+    file-type: .java
+    properties:
       sub-package: service.impl
-      class-postfix: ServiceImpl
     enable: true
   # 生成java controller类
-  - name: JavaController
+  - name: controller
     template: java_controller.tpl
-    output: .cg/output
-    file-postfix: Controller.java
-    variables:
+    prefix: ""
+    postfix: Controller
+    file-type: .java
+    properties:
       sub-package: controller
-      class-postfix: Controller
     enable: true
 `
 
-const javaEntityTpl = `package {{config "base-package"}}.{{config "module"}}.{{var "sub-package"}};
+const javaEntityTpl = `package {{package "."}};
 {{""}}
 {{- range imports}}
 {{.}}
 {{end -}}
-import com.baomidou.mybatisplus.annotation.tableName;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * {{table "comment"}} 实体类
@@ -98,8 +98,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @TableName("{{table "name"}}")
-@ApiModel(value="{{table "comment"}}实体类", description="{{table "name"}}")
-public class {{table "name" | camelCase | title}} {
+@ApiModel(value="{{table "comment"}}实体类", description="{{table "comment"}}实体类")
+public class {{className "."}} {
 {{- range columns}}
     @ApiModelProperty(value = "{{.comment}}")
     @TableField("{{.name}}")
@@ -107,25 +107,25 @@ public class {{table "name" | camelCase | title}} {
 {{end -}}
 }`
 
-const javaMapperTpl = `package {{config "base-package"}}.{{config "module"}}.{{var "sub-package"}};
+const javaMapperTpl = `package {{package "."}};
 
-import {{config "base-package"}}.{{config "module"}}.{{refs "JavaEntity" "sub-package"}}.{{table "name" | camelCase | title}};
+import {{fullClassName "entity"}}
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
- * {{table "comment"}} Mapper
+ * {{table "comment"}}dao接口
  *
  * @Author {{config "author"}}
  * @Date {{now}}
  */
-public interface {{table "name" | camelCase | title}}{{var "class-postfix"}} extends BaseMapper<{{table "name" | camelCase | title}}> {
+public interface {{className "."}} extends BaseMapper<{{className "entity"}}> {
 
 }`
 
 const javaMapperXmlTpl = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="{{config "base-package"}}.{{config "module"}}.{{refs "JavaMapper" "sub-package"}}.{{table "name" | camelCase | title}}{{refs "JavaMapper" "class-postfix"}}">
-    <resultMap id="BaseResultMap" type="{{config "base-package"}}.{{config "module"}}.{{refs "JavaEntity" "sub-package"}}.{{table "name" | camelCase | title}}">
+<mapper namespace="{{fullClassName "mapper"}}">
+    <resultMap id="BaseResultMap" type="{{fullClassName "entity"}}">
     {{range columns -}}
         {{"    "}}<id column="{{.name}}" jdbcType="{{dbToJDBC .type}}" property="{{camelCase .name}}" />
     {{end -}}
@@ -139,9 +139,9 @@ const javaMapperXmlTpl = `<?xml version="1.0" encoding="UTF-8"?>
     </sql>
 </mapper>`
 
-const javaServiceTpl = `package {{config "base-package"}}.{{config "module"}}.{{var "sub-package"}};
+const javaServiceTpl = `package {{package "."}}
 
-import {{config "base-package"}}.{{config "module"}}.{{refs "JavaEntity" "sub-package"}}.{{table "name" | camelCase | title}};
+import {{fullClassName "entity"}};
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -150,15 +150,14 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @Author {{config "author"}}
  * @Date {{now}}
  */
-public interface {{table "name" | camelCase | title}}{{var "class-postfix"}} extends IService<{{table "name" | camelCase | title}}> {
-}
-`
+public interface {{className "."}} extends IService<{{className "entity"}}> {
+}`
 
-const javaServiceImplTpl = `package {{config "base-package"}}.{{config "module"}}.{{var "sub-package"}};
+const javaServiceImplTpl = `package {{package "."}}
 
-import {{config "base-package"}}.{{config "module"}}.{{refs "JavaEntity" "sub-package"}}.{{table "name" | camelCase | title}};
-import {{config "base-package"}}.{{config "module"}}.{{refs "JavaMapper" "sub-package"}}.{{table "name" | camelCase | title}}{{refs "JavaMapper" "class-postfix"}};
-import {{config "base-package"}}.{{config "module"}}.{{refs "JavaService" "sub-package"}}.{{table "name" | camelCase | title}}{{refs "JavaService" "class-postfix"}};
+import {{fullClassName "entity"}};
+import {{fullClassName "mapper"}};
+import {{fullClassName "service"}};
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import lombok.AllArgsConstructor;
@@ -173,13 +172,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @AllArgsConstructor
 @Service
-public class {{table "name" | camelCase | title}}{{var "class-postfix"}} extends ServiceImpl<{{table "name" | camelCase | title}}{{refs "JavaMapper" "class-postfix"}}, {{table "name" | camelCase | title}}> implements {{table "name" | camelCase | title}}{{refs "JavaService" "class-postfix"}} {
-}
-`
+public class {{className "."}} extends ServiceImpl<{{className "mapper"}}, {{className "entity"}}> implements {{className "service"}} {
+}`
 
-const javaControllerTpl = `package {{config "base-package"}}.{{config "module"}}.{{var "sub-package"}};
+const javaControllerTpl = `package {{package "."}};
 
-import {{config "base-package"}}.{{config "module"}}.{{refs "JavaService" "sub-package"}}.{{table "name" | camelCase | title}}{{refs "JavaService" "class-postfix"}};
+import {{fullClassName "service"}}
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import lombok.AllArgsConstructor;
@@ -195,9 +193,9 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/{{table "name" | kebabCase}}")
-public class {{table "name" | camelCase | title}}{{var "class-postfix"}} {
+public class {{className "."}} {
 
-    private {{table "name" | camelCase | title}}{{refs "JavaService" "class-postfix"}} {{table "name" | camelCase}}Service;
+    private {{className "service"}};
 }
 `
 
@@ -208,7 +206,7 @@ func (i *Initializer) Init() {
 		return
 	}
 
-	generator.FileWriter{}.CreateFolder(".cg/output")
+	generator.FileWriter{}.CreateFolder(".cg/out")
 	generator.FileWriter{}.CreateFolder(".cg/templates")
 	generator.FileWriter{}.Write(configYaml, ".cg/config.yaml")
 	generator.FileWriter{}.Write(javaEntityTpl, ".cg/templates/java_entity.tpl")

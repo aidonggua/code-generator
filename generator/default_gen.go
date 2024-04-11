@@ -76,12 +76,35 @@ func (g *DefaultGenerator) Generate() string {
 			}
 		}
 
-		funcMap["var"] = func(key string) string {
-			return t.Variables[key].(string)
+		funcMap["prop"] = func(key string) string {
+			return t.Properties[key].(string)
 		}
-		funcMap["refs"] = func(task, key string) string {
-			return g.refs[task].Variables[key].(string)
+		refsFunc := func(task, key string) string {
+			return g.refs[task].Properties[key].(string)
 		}
+		funcMap["refs"] = refsFunc
+		classNameFunc := func(task string) string {
+			if task == "." {
+				task = t.Name
+			}
+			return strings.Title(fmt.Sprintf("%s%s%s", g.refs[task].Prefix, h.CamelCase(table.Name), g.refs[task].Postfix))
+		}
+		funcMap["className"] = classNameFunc
+		packageFunc := func(task string) string {
+			if task == "." {
+				task = t.Name
+			}
+			return fmt.Sprintf("%s.%s.%s", g.configMap["base-package"], g.configMap["module"], refsFunc(task, "sub-package"))
+		}
+		funcMap["package"] = packageFunc
+		fullClassNameFunc := func(task string) string {
+			if task == "." {
+				task = t.Name
+			}
+			return fmt.Sprintf("%s.%s", packageFunc(task), classNameFunc(task))
+		}
+		funcMap["fullClassName"] = fullClassNameFunc
+
 		funcMap["imports"] = func() []string {
 			return imports
 		}
@@ -116,7 +139,7 @@ func (g *DefaultGenerator) Generate() string {
 			panic(err)
 		}
 
-		FileWriter{}.Write(buffer.String(), fmt.Sprintf("%s/%s%s", t.Output, strings.Title(h.CamelCase(table.Name)), t.FilePostfix))
+		FileWriter{}.Write(buffer.String(), fmt.Sprintf(".cg/out/%s%s%s%s", t.Prefix, strings.Title(h.CamelCase(table.Name)), t.Postfix, t.FileType))
 	}
 	return ""
 }
@@ -136,17 +159,24 @@ func (g *DefaultGenerator) LoadConfig() error {
 			for _, taskConf := range tasksConf.([]interface{}) {
 				taskConfMap := taskConf.(map[string]interface{})
 				structuredTask := &Task{
-					Name:        taskConfMap["name"].(string),
-					Template:    taskConfMap["template"].(string),
-					Output:      taskConfMap["output"].(string),
-					FilePostfix: taskConfMap["file-postfix"].(string),
-					Enable:      taskConfMap["enable"].(bool),
+					Name:     taskConfMap["name"].(string),
+					Template: taskConfMap["template"].(string),
+					FileType: taskConfMap["file-type"].(string),
+					Prefix:   taskConfMap["prefix"].(string),
+					Postfix:  taskConfMap["postfix"].(string),
+					Enable:   taskConfMap["enable"].(bool),
 				}
-				if taskConfMap["variables"] == nil {
-					structuredTask.Variables = make(map[string]interface{})
+				if taskConfMap["properties"] == nil {
+					structuredTask.Properties = make(map[string]interface{})
 				} else {
-					structuredTask.Variables = taskConfMap["variables"].(map[string]interface{})
+					structuredTask.Properties = taskConfMap["properties"].(map[string]interface{})
 				}
+				structuredTask.Properties["name"] = structuredTask.Name
+				structuredTask.Properties["template"] = structuredTask.Template
+				structuredTask.Properties["file-type"] = structuredTask.FileType
+				structuredTask.Properties["prefix"] = structuredTask.Prefix
+				structuredTask.Properties["postfix"] = structuredTask.Postfix
+				structuredTask.Properties["enable"] = structuredTask.Enable
 
 				g.refs[structuredTask.Name] = structuredTask
 

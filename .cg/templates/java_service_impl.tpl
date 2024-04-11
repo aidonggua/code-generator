@@ -1,8 +1,8 @@
-package {{config "base-package"}}.{{config "module"}}.{{var "sub-package"}};
+package {{package "."}}
 
-import {{config "base-package"}}.{{config "module"}}.{{refs "JavaEntity" "sub-package"}}.{{table "name" | camelCase | title}};
-import {{config "base-package"}}.{{config "module"}}.{{refs "JavaMapper" "sub-package"}}.{{table "name" | camelCase | title}}{{refs "JavaMapper" "class-postfix"}};
-import {{config "base-package"}}.{{config "module"}}.{{refs "JavaService" "sub-package"}}.{{table "name" | camelCase | title}}{{refs "JavaService" "class-postfix"}};
+import {{fullClassName "entity"}};
+import {{fullClassName "mapper"}};
+import {{fullClassName "service"}};
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import lombok.AllArgsConstructor;
@@ -17,5 +17,5 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @AllArgsConstructor
 @Service
-public class {{table "name" | camelCase | title}}{{var "class-postfix"}} extends ServiceImpl<{{table "name" | camelCase | title}}{{refs "JavaMapper" "class-postfix"}}, {{table "name" | camelCase | title}}> implements {{table "name" | camelCase | title}}{{refs "JavaService" "class-postfix"}} {
+public class {{className "."}} extends ServiceImpl<{{className "mapper"}}, {{className "entity"}}> implements {{className "service"}} {
 }

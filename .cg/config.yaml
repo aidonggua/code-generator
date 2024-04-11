@@ -12,52 +12,54 @@ module: cg
 
 tasks:
   # 生成java实体类
-  - name: JavaEntity
+  - name: entity
     template: java_entity.tpl
-    output: .cg/output
-    file-postfix: .java
-    variables:
-      sub-package: dao.domain
+    prefix: ""
+    postfix: ""
+    file-type: .java
+    properties:
+      sub-package: dao.entity
     enable: true
   # 生成java mapper接口
-  - name: JavaMapper
+  - name: mapper
     template: java_mapper.tpl
-    output: .cg/output
-    file-postfix: Mapper.java
-    variables:
+    prefix: ""
+    postfix: Mapper
+    file-type: .java
+    properties:
       sub-package: dao.mapper
-      class-postfix: Mapper
     enable: true
   # 生成java mybatis 的xml文件
-  - name: JavaMapperXml
+  - name: xml
     template: java_mapper_xml.tpl
-    output: .cg/output
-    file-postfix: Mapper.xml
+    prefix: ""
+    postfix: Mapper
+    file-type: .xml
     enable: true
   # 生成java service接口
-  - name: JavaService
+  - name: service
     template: java_service.tpl
-    output: .cg/output
-    file-postfix: Service.java
-    variables:
+    prefix: ""
+    postfix: Service
+    file-type: .java
+    properties:
       sub-package: service
-      class-postfix: Service
     enable: true
   # 生成java services实现类
-  - name: JavaServiceImpl
+  - name: serviceImpl
     template: java_service_impl.tpl
-    output: .cg/output
-    file-postfix: ServiceImpl.java
-    variables:
+    prefix: ""
+    postfix: ServiceImpl
+    file-type: .java
+    properties:
       sub-package: service.impl
-      class-postfix: ServiceImpl
     enable: true
   # 生成java controller类
-  - name: JavaController
+  - name: controller
     template: java_controller.tpl
-    output: .cg/output
-    file-postfix: Controller.java
-    variables:
+    prefix: ""
+    postfix: Controller
+    file-type: .java
+    properties:
       sub-package: controller
-      class-postfix: Controller
     enable: true

@@ -1,15 +1,13 @@
-package {{config "base-package"}}.{{config "module"}}.{{var "sub-package"}};
+package {{package "."}};
 {{""}}
 {{- range imports}}
 {{.}}
 {{end -}}
-import com.baomidou.mybatisplus.annotation.tableName;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * {{table "comment"}} 实体类
@@ -22,8 +20,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @TableName("{{table "name"}}")
-@ApiModel(value="{{table "comment"}}实体类", description="{{table "name"}}")
-public class {{table "name" | camelCase | title}} {
+@ApiModel(value="{{table "comment"}}实体类", description="{{table "comment"}}实体类")
+public class {{className "."}} {
 {{- range columns}}
     @ApiModelProperty(value = "{{.comment}}")
     @TableField("{{.name}}")
