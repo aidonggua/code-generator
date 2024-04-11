@@ -26,47 +26,50 @@ cg init
 ```text
 .cg
 ├── config.yaml
-├── output
+├── out
 │   ├── User.java
+│   ├── UserController.java
 │   ├── UserMapper.java
-│   └── UserMapper.xml
+│   ├── UserMapper.xml
+│   ├── UserService.java
+│   └── UserServiceImpl.java
 └── templates
+    ├── java_controller.tpl
     ├── java_entity.tpl
     ├── java_mapper.tpl
-    └── java_mapper_xml.tpl
+    ├── java_mapper_xml.tpl
+    ├── java_service.tpl
+    └── java_service_impl.tpl
 ```
 ### 3. 自定义文件模板
 init命令会默认生成常用模版文件，可以根据不同的项目需求，在 `.cg/templates` 文件夹下创建或者修改模板文件  
 
 例如初始化命令自动生成的`java_entity.tpl` 文件，可用于生成java entity类
 ```text
-package {{config "base-package"}}.{{config "module"}}.{{var "sub-package"}};
+package {{package "."}};
 {{""}}
 {{- range imports}}
 {{.}}
 {{end -}}
-{{""}}
-import com.baomidou.mybatisplus.annotation.tableName;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
-* {{table "name"}}
-*
-* @Author {{config "author"}}
-* @Date {{now}}
-*/
+ * {{table "comment"}} 实体类
+ *
+ * @Author {{config "author"}}
+ * @Date {{now}}
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @TableName("{{table "name"}}")
-@ApiModel(value="{{table "comment"}}实体类", description="{{table "name"}}")
-public class {{table "name" | camelCase | title}} {
+@ApiModel(value="{{table "comment"}}实体类", description="{{table "comment"}}实体类")
+public class {{className "."}} {
 {{- range columns}}
     @ApiModelProperty(value = "{{.comment}}")
     @TableField("{{.name}}")
@@ -90,32 +93,61 @@ base-package: com.example
 module: cg
 
 tasks:
-  # 生成java实体
-  - name: JavaEntity
+  # 生成java实体类
+  - name: entity
     template: java_entity.tpl
-    output: .cg/output
-    file-postfix: .java
-    variables:
-      sub-package: dao.domain
+    prefix: ""
+    postfix: ""
+    file-type: .java
+    properties:
+      sub-package: dao.entity
     enable: true
-  # 生成java mapper类
-  - name: JavaMapper
+  # 生成java mapper接口
+  - name: mapper
     template: java_mapper.tpl
-    output: .cg/output
-    file-postfix: Mapper.java
-    variables:
+    prefix: ""
+    postfix: Mapper
+    file-type: .java
+    properties:
       sub-package: dao.mapper
-      class-postfix: Mapper
     enable: true
   # 生成java mybatis 的xml文件
-  - name: JavaMapperXml
+  - name: xml
     template: java_mapper_xml.tpl
-    output: .cg/output
-    file-postfix: Mapper.xml
+    prefix: ""
+    postfix: Mapper
+    file-type: .xml
+    enable: true
+  # 生成java service接口
+  - name: service
+    template: java_service.tpl
+    prefix: ""
+    postfix: Service
+    file-type: .java
+    properties:
+      sub-package: service
+    enable: true
+  # 生成java services实现类
+  - name: serviceImpl
+    template: java_service_impl.tpl
+    prefix: ""
+    postfix: ServiceImpl
+    file-type: .java
+    properties:
+      sub-package: service.impl
+    enable: true
+  # 生成java controller类
+  - name: controller
+    template: java_controller.tpl
+    prefix: ""
+    postfix: Controller
+    file-type: .java
+    properties:
+      sub-package: controller
     enable: true
 ```
 ### 5. 生成代码
-在需要生成代码的项目的根目录下执行 `cg run` 命令，会根据配置文件生成代码到`.cg/output`目录。
+在需要生成代码的项目的根目录下执行 `cg run` 命令，会根据配置文件生成代码到`.cg/out`目录。
 ```shell
 cg run
 ```
